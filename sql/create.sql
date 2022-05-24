@@ -7,10 +7,13 @@ CREATE TABLE users (id int primary key,
                    city varchar(40),
                    sex boolean,
                    age int not Null,
-                   lm_date date not Null);
+				   last_seen int,
+                   update_time date not Null);
 CREATE TABLE userFotos (userid int primary key references users(id),
                        link varchar(255) not Null);
 CREATE TABLE pairs (userid int not Null references users(id),
                     pairid int not Null,
-                   constraint pk primary key (userid, pairid));
+					position int not Null,
+					saved boolean not Null,
+					constraint pk primary key (userid, pairid));
 					   

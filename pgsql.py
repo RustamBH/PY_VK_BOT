@@ -38,6 +38,14 @@ def save_user(user_data, conn):
     conn.commit()
 
 
+def save_last_seen(id, position, conn):
+    query = f"""update users set last_seen = {position}
+                where id = {id}"""
+    cur = conn.cursor()
+    cur.execute(query)
+    conn.commit()
+
+
 def get_user(id, conn):
     query = f"select * from users where id = {id}"
     cur = conn.cursor()

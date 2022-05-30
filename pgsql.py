@@ -73,3 +73,13 @@ def save_pair(userid, pairid, conn):
     cur = conn.cursor()
     cur.execute(query)
     conn.commit()
+
+
+def save_user_photo(userid, link, conn):
+    query = f"""insert into userfotos(userid, link)
+                values ({userid}, '{link}')
+                ON CONFLICT (userid) DO NOTHING"""
+    cur = conn.cursor()
+    cur.execute(query)
+    conn.commit()
+    

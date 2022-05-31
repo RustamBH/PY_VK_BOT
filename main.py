@@ -44,7 +44,7 @@ def search_users(sex, city, offset, bdate=1997):
     result = vk_session.method("users.search",
                                {"sort": 0, "offset": offset, "city": city["id"], "hometown": city["title"], "sex": sex,
                                 "birth_year": bdate,
-                                "count": 3,
+                                "count": 20,
                                 "fields": "sex, bdate, city, country"})
     return result
 

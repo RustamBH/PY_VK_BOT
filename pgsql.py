@@ -1,10 +1,4 @@
-import psycopg
 from datetime import date
-
-pg_server = 'postgresql://pyvkbot:pyvkbot@10.168.88.113:5432/py_vk_bot'
-conn = psycopg.connect(pg_server)
-
-#{'id': 201642, 'bdate': '29.4', 'city': {'id': 2, 'title': 'Санкт-Петербург'}, 'country': {'id': 1, 'title': 'Россия'}, 'track_code': '90d07c571QicxIZ2JAlomJVEirMbVsBg7Lsq9Ih2Yd8fQ6kxqKKyYdjFjUUmCTufobdzRKMnrmrq00-Ghg', 'sex': 1, 'first_name': 'Алиса', 'last_name': 'Титова', 'can_access_closed': True, 'is_closed': False}
 
 
 def get_age(bdate):
@@ -46,12 +40,19 @@ def save_last_seen(id, position, conn):
     conn.commit()
 
 
-def get_user(id, conn):
-    query = f"select * from users where id = {id}"
+def get_user(position, conn):
+    query = f"""select u.name, u.profile, uf.link
+                from userfotos uf
+                left join users u on uf.userid = u.id  
+                left join pairs p on u.id = p.pairid 
+                where uf.userid  = (
+                    select pairid
+                    from pairs
+                    where position = {position})"""
     cur = conn.cursor()
     cur.execute(query)
     result = cur.fetchone()
-    return result
+    return result[0], result[1], result[2]
 
 
 def get_pair_position_max(userid, conn):
@@ -82,4 +83,46 @@ def save_user_photo(userid, link, conn):
     cur = conn.cursor()
     cur.execute(query)
     conn.commit()
-    
+
+
+def get_max_rec(conn):
+    query = f"select count(*) from pairs"
+    cur = conn.cursor()
+    cur.execute(query)
+    result = cur.fetchone()
+    if result[0] is None:
+        return 0
+    else:
+        return int(result[0])
+
+
+def add_in_favorites(pairid, conn):
+    query = f"""update pairs
+                set saved = true
+                where pairid = {pairid}"""
+    cur = conn.cursor()
+    cur.execute(query)
+    conn.commit()
+
+
+def get_pair_id(position, conn):
+    query = f"select pairid from pairs where position = {position}"
+    cur = conn.cursor()
+    cur.execute(query)
+    result = cur.fetchone()
+    return result
+
+
+def get_favorites(conn):
+    query = f"""select u.name, u.profile
+                from users u
+                left join pairs p on
+                    u.id = p.userid
+                where
+                    u.id in (select pairid
+                    from pairs
+                    where saved = true)"""
+    cur = conn.cursor()
+    cur.execute(query)
+    result = cur.fetchall()
+    return result

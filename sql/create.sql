@@ -7,7 +7,7 @@ GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO pyvkbot;
 CREATE TABLE users (id int primary key,
                    name varchar(40) not Null,
                    city varchar(40),
-                   sex boolean,
+                   sex int,
                    age int not Null,
 				   profile text,
 				   last_seen int,

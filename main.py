@@ -159,8 +159,6 @@ for event in group_longpool.listen():
                 else:
                     show_user(result, id)
                     save_last_seen(id, position, conn)
-            elif msg == 'stop':
-                exit()
             elif msg == 'в избранное':
                 pairid = get_pair_id(id, position, conn)
                 if pairid is not None:

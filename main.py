@@ -2,12 +2,16 @@ import json
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
-import psycopg2
+import psycopg
 from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
     get_favorites
 
-pg_server = 'postgresql://pyvkbot:pyvkbot@127.0.0.1:5432/py_vk_bot'
-conn = psycopg2.connect(pg_server)
+pg_server = 'localhost'
+pg_port = '5432'
+bot_db = 'py_vk_bot'
+
+conn_string = f'postgresql://{adm_user}:{adm_pass}@{pg_server}:{pg_port}/{bot_db}'
+conn = psycopg.connect(conn_string)
 
 
 def get_tokens(file_name):

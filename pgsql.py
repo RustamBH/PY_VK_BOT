@@ -1,3 +1,4 @@
+import psycopg
 from datetime import date
 
 
@@ -36,16 +37,14 @@ def save_user(user_data, conn):
     query = f"""insert into users(id, name, city, sex, profile, age, last_seen, update_time) 
                 values ({id}, '{name}', {city}, {sex}, '{profile}', {age}, 0, '{update_time}') 
                 ON CONFLICT (id) DO NOTHING"""
-    cur = conn.cursor()
-    cur.execute(query)
+    conn.execute(query)
     conn.commit()
 
 
 def save_last_seen(id, position, conn):
     query = f"""update users set last_seen = {position}
                 where id = {id}"""
-    cur = conn.cursor()
-    cur.execute(query)
+    conn.execute(query)
     conn.commit()
 
 
@@ -58,16 +57,14 @@ def get_user(position, conn):
                     select pairid
                     from pairs
                     where position = {position})"""
-    cur = conn.cursor()
-    cur.execute(query)
+    cur = conn.execute(query)
     result = cur.fetchone()
     return result[0], result[1], result[2]
 
 
 def get_pair_position_max(userid, conn):
     query = f"select max(position) from pairs where userid = {userid}"
-    cur = conn.cursor()
-    cur.execute(query)
+    cur = conn.execute(query)
     result = cur.fetchone()
     if result[0] is None:
         return 0
@@ -80,8 +77,7 @@ def save_pair(userid, pairid, conn):
     query = f"""insert into pairs(userid, pairid, position, saved)
                 values ({userid}, {pairid}, {position}, False)
                 ON CONFLICT (userid, pairid) DO NOTHING"""
-    cur = conn.cursor()
-    cur.execute(query)
+    conn.execute(query)
     conn.commit()
 
 
@@ -89,15 +85,13 @@ def save_user_photo(userid, link, conn):
     query = f"""insert into userfotos(userid, link)
                 values ({userid}, '{link}')
                 ON CONFLICT (userid) DO NOTHING"""
-    cur = conn.cursor()
-    cur.execute(query)
+    conn.execute(query)
     conn.commit()
 
 
 def get_max_rec(userid, conn):
     query = f"select count(*) from pairs where userid = {userid}"
-    cur = conn.cursor()
-    cur.execute(query)
+    cur = conn.execute(query)
     result = cur.fetchone()
     if result[0] is None:
         return 0
@@ -109,15 +103,13 @@ def add_in_favorites(pairid, conn):
     query = f"""update pairs
                 set saved = true
                 where pairid = {pairid}"""
-    cur = conn.cursor()
-    cur.execute(query)
+    conn.execute(query)
     conn.commit()
 
 
 def get_pair_id(position, conn):
     query = f"select pairid from pairs where position = {position}"
-    cur = conn.cursor()
-    cur.execute(query)
+    cur = conn.execute(query)
     result = cur.fetchone()
     return result
 
@@ -131,7 +123,6 @@ def get_favorites(conn):
                     u.id in (select pairid
                     from pairs
                     where saved = true)"""
-    cur = conn.cursor()
-    cur.execute(query)
+    cur = conn.execute(query)
     result = cur.fetchall()
     return result

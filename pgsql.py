@@ -1,15 +1,4 @@
-import psycopg
 from datetime import date
-
-
-def get_age(bdate):
-    bdate = bdate.split('.')
-    if len(bdate) == 3:
-        age = int(date.today().year) - int(bdate[2])
-        return age
-    else:
-        return 0
-
 
 def get_year(bdate):
     bdate = bdate.split('.')
@@ -26,19 +15,16 @@ def save_user(user_data, conn):
     if 'city' in user_data:
         city = user_data['city']['id']
     else:
-        return
+        return False
     sex = user_data['sex']
     profile = f"https://vk.com/id{user_data['id']}"
-    if 'bdate' in user_data:
-        age = get_age(user_data['bdate'])
-    else:
-        age = 0
     update_time = date.today()
-    query = f"""insert into users(id, name, city, sex, profile, age, last_seen, update_time) 
-                values ({id}, '{name}', {city}, {sex}, '{profile}', {age}, 0, '{update_time}') 
+    query = f"""insert into users(id, name, city, sex, profile, last_seen, update_time) 
+                values ({id}, '{name}', {city}, {sex}, '{profile}', 0, '{update_time}') 
                 ON CONFLICT (id) DO NOTHING"""
     conn.execute(query)
     conn.commit()
+    return True
 
 
 def save_last_seen(id, position, conn):

@@ -36,7 +36,6 @@ def create_bot_tables(con):
                    name varchar(40) not Null,
                    city varchar(40),
                    sex int,
-                   age int not Null,
 				   profile text,
 				   last_seen int DEFAULT 0,
 				   n_search int DEFAULT 0,
@@ -74,3 +73,4 @@ if __name__ == '__main__':
     conn = psycopg.connect(conn_string)
     create_bot_tables(conn)
     conn.close()
+    print('База создана')

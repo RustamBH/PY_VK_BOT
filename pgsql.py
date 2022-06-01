@@ -10,6 +10,15 @@ def get_age(bdate):
         return 0
 
 
+def get_year(bdate):
+    bdate = bdate.split('.')
+    if len(bdate) == 3:
+        b_year = int(bdate[2])
+        return b_year
+    else:
+        return 0
+
+
 def save_user(user_data, conn):
     id = user_data['id']
     name = f"{user_data['first_name']} {user_data['last_name']}"
@@ -85,8 +94,8 @@ def save_user_photo(userid, link, conn):
     conn.commit()
 
 
-def get_max_rec(conn):
-    query = f"select count(*) from pairs"
+def get_max_rec(userid, conn):
+    query = f"select count(*) from pairs where userid = {userid}"
     cur = conn.cursor()
     cur.execute(query)
     result = cur.fetchone()

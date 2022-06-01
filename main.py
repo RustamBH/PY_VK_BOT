@@ -3,7 +3,7 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import psycopg2
-from pgsql import save_user, get_user, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
+from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
     get_favorites
 
 pg_server = 'postgresql://pyvkbot:pyvkbot@10.168.88.113:5432/py_vk_bot'
@@ -36,15 +36,15 @@ def get_user_bio(id):
     return user_data
 
 
-def search_users(sex, city, offset, bdate=1997):
+def search_users(sex, city, offset, limit=50, b_year=1997):
     if sex == 1:
         sex = 2
     else:
         sex = 1
     result = vk_session.method("users.search",
                                {"sort": 0, "offset": offset, "city": city["id"], "hometown": city["title"], "sex": sex,
-                                "birth_year": bdate,
-                                "count": 20,
+                                "birth_year": b_year,
+                                "count": limit,
                                 "fields": "sex, bdate, city, country"})
     return result
 
@@ -86,17 +86,19 @@ gsession_api = gvk_session.get_api()
 glongpool = VkLongPoll(gvk_session)
 
 keyboard = VkKeyboard(one_time=False)
-keyboard.add_button('Начать', color=VkKeyboardColor.POSITIVE)
+keyboard.add_button('Поиск', color=VkKeyboardColor.POSITIVE)
 keyboard.add_button('Выключить', color=VkKeyboardColor.NEGATIVE)
 keyboard.add_line()
 keyboard.add_button('Предыдущий', color=VkKeyboardColor.NEGATIVE)
 keyboard.add_button('Следующий', color=VkKeyboardColor.POSITIVE)
 keyboard.add_line()
-keyboard.add_button('В избранное', color=VkKeyboardColor.POSITIVE)
-keyboard.add_button('Список избранных', color=VkKeyboardColor.NEGATIVE)
+keyboard.add_button('В избранное', color=VkKeyboardColor.PRIMARY)
+keyboard.add_button('Список избранных', color=VkKeyboardColor.SECONDARY)
 
 max_records = 0
 position = 0
+limit = 5
+n_search = 0
 
 for event in glongpool.listen():
     if event.type == VkEventType.MESSAGE_NEW:
@@ -105,32 +107,41 @@ for event in glongpool.listen():
             id = event.user_id
             udata = get_user_bio(id)[0]
             save_user(udata, conn)
-            if msg == "hi":
-                show_kbd(id, "Нажмите 'Начать' если в первый раз или 'Следующий' если уже пользовались")
-            elif msg == 'начать':
-                result = search_users(udata['sex'], udata['city'], 2)
+            if msg == 'hi':
+                show_kbd(id, "Нажмите 'Поиск' для поиска знакомств")
+            elif msg == 'поиск':
+                b_year = get_year(udata['bdate'])
+                if b_year == 0:
+                    result = search_users(udata['sex'], udata['city'], limit * n_search, limit)
+                else:
+                    result = search_users(udata['sex'], udata['city'], limit * n_search, limit, b_year)
                 for user in result["items"]:
                     if not user["is_closed"]:
                         save_user(user, conn)
                         save_pair(id, user['id'], conn)
-                        max_records = get_max_rec(conn)
+                        max_records = get_max_rec(id, conn)
                         search_top_photos(user["id"], conn)
+                n_search += 1
+                text = f"Для просмотра нажмите 'Следующий' или Предыдущий'"
+                send_some_msg(id, text)
             elif msg == 'следующий':
                 if max_records == 0:
-                    max_records = get_max_rec(conn)
+                    max_records = get_max_rec(id, conn)
                 position += 1
                 if position > max_records:
-                    position = 1
+                    position = max_records
+                    text = f"Для продолжения нажмите 'Поиск'!"
+                    send_some_msg(id, text)
                 name, profile, link = get_user(position, conn)
                 send_some_msg(id, name)
                 send_some_msg(id, profile)
                 send_photos(id, "3 фото", link=link)
             elif msg == 'предыдущий':
                 if max_records == 0:
-                    max_records = get_max_rec(conn)
+                    max_records = get_max_rec(id, conn)
                 position -= 1
                 if position <= 0:
-                    position = max_records
+                    position = 1
                 name, profile, link = get_user(position, conn)
                 send_some_msg(id, name)
                 send_some_msg(id, profile)

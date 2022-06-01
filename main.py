@@ -87,7 +87,6 @@ glongpool = VkLongPoll(gvk_session)
 
 keyboard = VkKeyboard(one_time=False)
 keyboard.add_button('Поиск', color=VkKeyboardColor.POSITIVE)
-keyboard.add_button('Выключить', color=VkKeyboardColor.NEGATIVE)
 keyboard.add_line()
 keyboard.add_button('Предыдущий', color=VkKeyboardColor.NEGATIVE)
 keyboard.add_button('Следующий', color=VkKeyboardColor.POSITIVE)
@@ -146,11 +145,12 @@ for event in glongpool.listen():
                 send_some_msg(id, name)
                 send_some_msg(id, profile)
                 send_photos(id, "3 фото", link=link)
-            elif msg == 'выключить':
+            elif msg == 'stop':
                 exit()
             elif msg == 'в избранное':
                 pairid = get_pair_id(position, conn)
                 add_in_favorites(pairid[0], conn)
+                send_some_msg(id, "Добавлено в избранное")
             elif msg == 'список избранных':
                 favor_list = get_favorites(conn)
                 for user in favor_list:

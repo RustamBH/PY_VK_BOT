@@ -38,7 +38,8 @@ def create_bot_tables(con):
                    sex int,
                    age int not Null,
 				   profile text,
-				   last_seen int,
+				   last_seen int DEFAULT 0,
+				   n_search int DEFAULT 0,
                    update_time date not Null)"""
     conn.execute(query)
     query = f"""CREATE TABLE userFotos (userid int not Null,

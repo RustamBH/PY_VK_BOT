@@ -52,7 +52,27 @@ def get_last_seen(id, conn):
     query = f"""select last_seen from users where id = {id}"""
     cur = conn.execute(query)
     result = cur.fetchone()
-    return result
+    if result[0] is None:
+        return 0
+    else:
+        return int(result[0])
+
+
+def save_n_search(id, n_search, conn):
+    query = f"""update users set n_search = {n_search}
+                where id = {id}"""
+    conn.execute(query)
+    conn.commit()
+
+
+def get_n_search(id, conn):
+    query = f"""select n_search from users where id = {id}"""
+    cur = conn.execute(query)
+    result = cur.fetchone()
+    if result[0] is None:
+        return 0
+    else:
+        return int(result[0])
 
 
 def get_user(position, conn):

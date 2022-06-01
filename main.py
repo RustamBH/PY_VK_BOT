@@ -4,9 +4,9 @@ from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import psycopg
 from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
-    get_favorites
+    get_favorites, get_n_search, save_n_search, get_last_seen, save_last_seen
 
-pg_server = '10.168.88.113' #'localhost'
+pg_server = 'localhost'
 pg_port = '5432'
 bot_db = 'py_vk_bot'
 
@@ -102,10 +102,7 @@ keyboard.add_line()
 keyboard.add_button('В избранное', color=VkKeyboardColor.PRIMARY)
 keyboard.add_button('Список избранных', color=VkKeyboardColor.SECONDARY)
 
-max_records = 0
-position = 0
 limit = 5
-n_search = 0
 
 for event in glongpool.listen():
     if event.type == VkEventType.MESSAGE_NEW:
@@ -114,6 +111,7 @@ for event in glongpool.listen():
             id = event.user_id
             udata = get_user_bio(id)[0]
             save_user(udata, conn)
+            n_search = get_n_search(id, conn)
             if msg == 'hi':
                 show_kbd(id, "Нажмите 'Поиск' для поиска знакомств")
             elif msg == 'поиск':
@@ -129,28 +127,27 @@ for event in glongpool.listen():
                         max_records = get_max_rec(id, conn)
                         search_top_photos(user["id"], conn)
                 n_search += 1
+                save_n_search(id, n_search, conn)
                 text = f"Для просмотра нажмите 'Следующий' или Предыдущий'"
                 send_some_msg(id, text)
             elif msg == 'следующий':
-                if max_records == 0:
-                    max_records = get_max_rec(id, conn)
+                max_records = get_max_rec(id, conn)
+                position = get_last_seen(id, conn)
                 position += 1
                 if position > max_records:
                     position = max_records
                     text = f"Для продолжения нажмите 'Поиск'!"
                     send_some_msg(id, text)
                 result = get_user(position, conn)
-                if result is None:
-                    text = f"Для начала нажмите 'Поиск'!"
-                    send_some_msg(id, text)
-                else:
+                if result is not None:
                     name, profile, link = pars_sesult(result)
                     send_some_msg(id, name)
                     send_some_msg(id, profile)
                     send_photos(id, "3 фото", link=link)
+                    save_last_seen(id, position, conn)
             elif msg == 'предыдущий':
-                if max_records == 0:
-                    max_records = get_max_rec(id, conn)
+                max_records = get_max_rec(id, conn)
+                position = get_last_seen(id, conn)
                 position -= 1
                 if position <= 0:
                     position = 1
@@ -163,6 +160,7 @@ for event in glongpool.listen():
                     send_some_msg(id, name)
                     send_some_msg(id, profile)
                     send_photos(id, "3 фото", link=link)
+                    save_last_seen(id, position, conn)
             elif msg == 'stop':
                 exit()
             elif msg == 'в избранное':

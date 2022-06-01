@@ -78,8 +78,8 @@ def get_n_search(id, conn):
 def get_pair(id, position, conn):
     query = f"""select u.name, u.profile, uf.link
                 from userfotos uf
-                left join users u on uf.userid = u.id  
-                left join pairs p on u.id = p.pairid and p.userid = {id} and p.position = {position}"""
+                join users u on uf.userid = u.id  
+                join pairs p on u.id = p.pairid and p.userid = {id} and p.position = {position}"""
     cur = conn.execute(query)
     result = cur.fetchone()
     return result

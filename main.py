@@ -3,7 +3,7 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import psycopg
-from pgsql import save_user, get_pair, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
+from pgsql import save_user, get_pair, get_year, save_pair, save_user_photo, get_pair_position_max, add_in_favorites, get_pair_id, \
     get_favorites, get_n_search, save_n_search, get_last_seen, save_last_seen
 
 pg_server = 'localhost'
@@ -124,14 +124,14 @@ for event in glongpool.listen():
                     if not user["is_closed"]:
                         save_user(user, conn)
                         save_pair(id, user['id'], conn)
-                        max_records = get_max_rec(id, conn)
+                        max_records = get_pair_position_max(id, conn)
                         search_top_photos(user["id"], conn)
                 n_search += 1
                 save_n_search(id, n_search, conn)
                 text = f"Для просмотра нажмите 'Следующий' или Предыдущий'"
                 send_some_msg(id, text)
             elif msg == 'следующий':
-                max_records = get_max_rec(id, conn)
+                max_records = get_pair_position_max(id, conn)
                 position = get_last_seen(id, conn)
                 position += 1
                 if position > max_records:
@@ -146,7 +146,7 @@ for event in glongpool.listen():
                     send_photos(id, "3 фото", link=link)
                     save_last_seen(id, position, conn)
             elif msg == 'предыдущий':
-                max_records = get_max_rec(id, conn)
+                max_records = get_pair_position_max(id, conn)
                 position = get_last_seen(id, conn)
                 position -= 1
                 if position <= 0:

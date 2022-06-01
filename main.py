@@ -6,7 +6,7 @@ import psycopg2
 from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
     get_favorites
 
-pg_server = 'postgresql://pyvkbot:pyvkbot@10.168.88.113:5432/py_vk_bot'
+pg_server = 'postgresql://pyvkbot:pyvkbot@127.0.0.1:5432/py_vk_bot'
 conn = psycopg2.connect(pg_server)
 
 

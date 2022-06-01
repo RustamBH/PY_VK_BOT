@@ -6,7 +6,7 @@ import psycopg
 from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
     get_favorites
 
-pg_server = 'localhost'
+pg_server = '10.168.88.113' #'localhost'
 pg_port = '5432'
 bot_db = 'py_vk_bot'
 
@@ -83,6 +83,10 @@ def search_top_photos(pair_id, conn):
     save_user_photo(user['id'], link_3_photo, conn)
 
 
+def pars_sesult(result):
+    return result[0], result[1], result[2]
+
+
 tokens = get_tokens('tokens')
 vk_session = vk_api.VkApi(token=tokens['app'])
 gvk_session = vk_api.VkApi(token=tokens['group'])
@@ -135,20 +139,30 @@ for event in glongpool.listen():
                     position = max_records
                     text = f"Для продолжения нажмите 'Поиск'!"
                     send_some_msg(id, text)
-                name, profile, link = get_user(position, conn)
-                send_some_msg(id, name)
-                send_some_msg(id, profile)
-                send_photos(id, "3 фото", link=link)
+                result = get_user(position, conn)
+                if result is None:
+                    text = f"Для начала нажмите 'Поиск'!"
+                    send_some_msg(id, text)
+                else:
+                    name, profile, link = pars_sesult(result)
+                    send_some_msg(id, name)
+                    send_some_msg(id, profile)
+                    send_photos(id, "3 фото", link=link)
             elif msg == 'предыдущий':
                 if max_records == 0:
                     max_records = get_max_rec(id, conn)
                 position -= 1
                 if position <= 0:
                     position = 1
-                name, profile, link = get_user(position, conn)
-                send_some_msg(id, name)
-                send_some_msg(id, profile)
-                send_photos(id, "3 фото", link=link)
+                result = get_user(position, conn)
+                if result is None:
+                    text = f"Для начала нажмите 'Поиск'!"
+                    send_some_msg(id, text)
+                else:
+                    name, profile, link = pars_sesult(result)
+                    send_some_msg(id, name)
+                    send_some_msg(id, profile)
+                    send_photos(id, "3 фото", link=link)
             elif msg == 'stop':
                 exit()
             elif msg == 'в избранное':

@@ -48,6 +48,13 @@ def save_last_seen(id, position, conn):
     conn.commit()
 
 
+def get_last_seen(id, conn):
+    query = f"""select last_seen from users where id = {id}"""
+    cur = conn.execute(query)
+    result = cur.fetchone()
+    return result
+
+
 def get_user(position, conn):
     query = f"""select u.name, u.profile, uf.link
                 from userfotos uf
@@ -59,7 +66,7 @@ def get_user(position, conn):
                     where position = {position})"""
     cur = conn.execute(query)
     result = cur.fetchone()
-    return result[0], result[1], result[2]
+    return result
 
 
 def get_pair_position_max(userid, conn):
@@ -82,9 +89,10 @@ def save_pair(userid, pairid, conn):
 
 
 def save_user_photo(userid, link, conn):
+    query = f"""delete from userfotos where userid = {userid}"""
+    conn.execute(query)
     query = f"""insert into userfotos(userid, link)
-                values ({userid}, '{link}')
-                ON CONFLICT (userid) DO NOTHING"""
+                values ({userid}, '{link}')"""
     conn.execute(query)
     conn.commit()
 

@@ -77,8 +77,8 @@ def get_n_search(id, conn):
 
 def get_pair(id, position, conn):
     query = f"""select u.name, u.profile, uf.link
-                from userfotos uf
-                join users u on uf.userid = u.id  
+                from users u 
+                left join userfotos uf on uf.userid = u.id
                 join pairs p on u.id = p.pairid and p.userid = {id} and p.position = {position}"""
     cur = conn.execute(query)
     result = cur.fetchone()
@@ -113,40 +113,28 @@ def save_user_photo(userid, link, conn):
     conn.commit()
 
 
-def get_max_rec(userid, conn):
-    query = f"select count(*) from pairs where userid = {userid}"
-    cur = conn.execute(query)
-    result = cur.fetchone()
-    if result[0] is None:
-        return 0
-    else:
-        return int(result[0])
-
-
-def add_in_favorites(pairid, conn):
+def add_in_favorites(id, pairid, conn):
     query = f"""update pairs
                 set saved = true
-                where pairid = {pairid}"""
+                where pairid = {pairid} and userid = {id}"""
     conn.execute(query)
     conn.commit()
 
 
-def get_pair_id(position, conn):
-    query = f"select pairid from pairs where position = {position}"
+def get_pair_id(id, position, conn):
+    query = f"select pairid from pairs where position = {position} and userid = {id}"
     cur = conn.execute(query)
     result = cur.fetchone()
     return result
 
 
-def get_favorites(conn):
+def get_favorites(id, conn):
     query = f"""select u.name, u.profile
                 from users u
-                left join pairs p on
-                    u.id = p.userid
-                where
-                    u.id in (select pairid
-                    from pairs
-                    where saved = true)"""
+                join pairs p on
+                    u.id = p.pairid
+                    and p.userid = {id}
+                    and p.saved = true"""
     cur = conn.execute(query)
     result = cur.fetchall()
     return result

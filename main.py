@@ -132,7 +132,9 @@ for event in glongpool.listen():
                 send_some_msg(id, text)
             elif msg == 'следующий':
                 max_records = get_pair_position_max(id, conn)
+                print(max_records)
                 position = get_last_seen(id, conn)
+                print(position)
                 position += 1
                 if position > max_records:
                     position = max_records
@@ -164,11 +166,11 @@ for event in glongpool.listen():
             elif msg == 'stop':
                 exit()
             elif msg == 'в избранное':
-                pairid = get_pair_id(position, conn)
-                add_in_favorites(pairid[0], conn)
+                pairid = get_pair_id(id, position, conn)
+                add_in_favorites(id, pairid[0], conn)
                 send_some_msg(id, "Добавлено в избранное")
             elif msg == 'список избранных':
-                favor_list = get_favorites(conn)
+                favor_list = get_favorites(id, conn)
                 for user in favor_list:
                     text = f"{user[0]}, {user[1]}"
                     send_some_msg(id, text)

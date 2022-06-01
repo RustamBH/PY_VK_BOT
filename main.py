@@ -43,7 +43,7 @@ def get_user_bio(id):
 
 def search_users(sex, city, offset, search_limit, b_year):
     if b_year == 0:
-        b_year = int(date.today().year) - 18
+        b_year = int(date.today().year) - 20
     if sex == 1:
         sex = 2
     else:

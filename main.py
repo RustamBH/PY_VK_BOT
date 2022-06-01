@@ -10,7 +10,7 @@ pg_server = 'localhost'
 pg_port = '5432'
 bot_db = 'py_vk_bot'
 
-conn_string = f'postgresql://{adm_user}:{adm_pass}@{pg_server}:{pg_port}/{bot_db}'
+conn_string = f'postgresql://pyvkbot:pyvkbot@{pg_server}:{pg_port}/{bot_db}'
 conn = psycopg.connect(conn_string)
 
 

@@ -3,7 +3,7 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 import psycopg
-from pgsql import save_user, get_user, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
+from pgsql import save_user, get_pair, get_year, save_pair, save_user_photo, get_max_rec, add_in_favorites, get_pair_id, \
     get_favorites, get_n_search, save_n_search, get_last_seen, save_last_seen
 
 pg_server = 'localhost'
@@ -83,7 +83,7 @@ def search_top_photos(pair_id, conn):
     save_user_photo(user['id'], link_3_photo, conn)
 
 
-def pars_sesult(result):
+def pars_result(result):
     return result[0], result[1], result[2]
 
 
@@ -138,9 +138,9 @@ for event in glongpool.listen():
                     position = max_records
                     text = f"Для продолжения нажмите 'Поиск'!"
                     send_some_msg(id, text)
-                result = get_user(position, conn)
+                result = get_pair(id, position, conn)
                 if result is not None:
-                    name, profile, link = pars_sesult(result)
+                    name, profile, link = pars_result(result)
                     send_some_msg(id, name)
                     send_some_msg(id, profile)
                     send_photos(id, "3 фото", link=link)
@@ -151,12 +151,12 @@ for event in glongpool.listen():
                 position -= 1
                 if position <= 0:
                     position = 1
-                result = get_user(position, conn)
+                result = get_pair(id, position, conn)
                 if result is None:
                     text = f"Для начала нажмите 'Поиск'!"
                     send_some_msg(id, text)
                 else:
-                    name, profile, link = pars_sesult(result)
+                    name, profile, link = pars_result(result)
                     send_some_msg(id, name)
                     send_some_msg(id, profile)
                     send_photos(id, "3 фото", link=link)

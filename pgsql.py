@@ -75,15 +75,11 @@ def get_n_search(id, conn):
         return int(result[0])
 
 
-def get_user(position, conn):
+def get_pair(id, position, conn):
     query = f"""select u.name, u.profile, uf.link
                 from userfotos uf
                 left join users u on uf.userid = u.id  
-                left join pairs p on u.id = p.pairid 
-                where uf.userid  = (
-                    select pairid
-                    from pairs
-                    where position = {position})"""
+                left join pairs p on u.id = p.pairid and p.userid = {id} and p.position = {position}"""
     cur = conn.execute(query)
     result = cur.fetchone()
     return result
